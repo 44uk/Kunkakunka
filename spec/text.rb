@@ -2,7 +2,6 @@
 require File.expand_path(File.join('../', 'spec_helper'), File.dirname(__FILE__))
 
 # http://azunyan.sitemix.jp/kunkakunka/kunkakunka.php
-
 describe Kunkakunka do
   context '.do' do
     subject { Kunkakunka.do }
@@ -16,6 +15,13 @@ describe Kunkakunka do
 
     it { should match /^さくら！さくら！さくら！さくらぁぁあああわぁああああああああああああああああああああああん！！！/ }
     it { should match /俺の想いよさくらへ届け！！友枝小学校のさくらへ届け！$/ }
+  end
+
+  context '.do' do
+    subject { Kunkakunka.create.to_s }
+
+    it { should match /^ルイズ！ルイズ！ルイズ！ルイズぅぅうううわぁああああああああああああああああああああああん！！！/ }
+    it { should match /俺の想いよルイズへ届け！！ハルケギニアのルイズへ届け！$/ }
   end
 end
 

@@ -3,7 +3,10 @@ require 'kunkakunka/text'
 
 module Kunkakunka
   def self.do(params = nil)
-    text = Kunkakunka::Text.new(params)
-    text.to_s
+    self.create(params).to_s
+  end
+
+  def self.create(params = nil)
+    Kunkakunka::Text.new(params)
   end
 end
