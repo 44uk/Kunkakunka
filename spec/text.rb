@@ -6,13 +6,21 @@ require File.expand_path(File.join('../', 'spec_helper'), File.dirname(__FILE__)
 describe Kunkakunka do
   context '.do' do
     subject { Kunkakunka.do }
-      it { should match /^ルイズ！ルイズ！ルイズ！ルイズぅぅうううわぁああああああああああああああああああああああん！！！/ }
-      it { should match /俺の想いよルイズへ届け！！ハルケギニアのルイズへ届け！$/ }
+
+    it { should match /^ルイズ！ルイズ！ルイズ！ルイズぅぅうううわぁああああああああああああああああああああああん！！！/ }
+    it { should match /俺の想いよルイズへ届け！！ハルケギニアのルイズへ届け！$/ }
+  end
+
+  context '.do with params' do
+    subject { Kunkakunka.do(name: 'さくら', location: '友枝小学校') }
+
+    it { should match /^さくら！さくら！さくら！さくらぁぁあああわぁああああああああああああああああああああああん！！！/ }
+    it { should match /俺の想いよさくらへ届け！！友枝小学校のさくらへ届け！$/ }
   end
 end
 
 describe Kunkakunka::Text do
-  context '.new with args' do
+  context '.new with params' do
     before do
       @text = Kunkakunka::Text.new(
         name: 'あずさ',
