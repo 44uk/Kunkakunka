@@ -2,17 +2,25 @@
 class Kunkakunka::Text
   attr_accessor :name, :full_name,
     :hair_color, :novel, :n_vol, :anime, :season, :comics, :c_vol, :location,
-    :other1, :other2, :other3, :other4, :other5
+    :other1, :other2, :other3, :other4, :other5,
+    :strip_newline
 
   attr_reader :name_with_gasp, :name_with_space
 
-  def initialize(*args)
+  def initialize(attributes = nil)
+    assign_attributes(attributes) if attributes
     yield self if block_given?
   end
 
+  def assign_attributes(new_attributes)
+    new_attributes.each do |k, v|
+      send("#{k.to_s}=", v) if respond_to?("#{k.to_s}=")
+    end
+  end
+
   def template
-    %q(%name%！%name%！%name%！%name_with_gasp%わぁああああああああああああああああああああああん！！！
-あぁああああ…ああ…あっあっー！あぁああああああ！！！%name%%name%%name_with_gasp%わぁああああ！！！
+    %q(%name%！%name%！%name%！%name_with_gasp1%わぁああああああああああああああああああああああん！！！
+あぁああああ…ああ…あっあっー！あぁああああああ！！！%name%%name%%name_with_gasp2%ぁわぁああああ！！！
 あぁクンカクンカ！クンカクンカ！スーハースーハー！スーハースーハー！いい匂いだなぁ…くんくん
 んはぁっ！%full_name%たんの%hair_color%の髪をクンカクンカしたいお！クンカクンカ！あぁあ！！
 間違えた！モフモフしたいお！モフモフ！モフモフ！髪髪モフモフ！カリカリモフモフ…きゅんきゅんきゅい！！
@@ -27,7 +35,7 @@ class Kunkakunka::Text
 %anime%の%name%ちゃんが僕に話しかけてるぞ！！！よかった…世の中まだまだ捨てたモンじゃないんだねっ！
 いやっほぉおおおおおおお！！！僕には%name%ちゃんがいる！！やったよ%other1%！！ひとりでできるもん！！！
 あ、%comics%の%name%ちゃああああああああああああああん！！いやぁあああああああああああああああ！！！！
-あっあんああっああんあ%other2%ぁあ！！%other3%！！%other4%ぁああああああ！！！%other5%ぁあああ！！
+あっあんああっああんあ%other2%！！%other3%！！%other4%！！！%other5%！！
 ううっうぅうう！！俺の想いよ%name%へ届け！！%location%の%name%へ届け！)
   end
 
@@ -43,37 +51,32 @@ class Kunkakunka::Text
     self.c_vol      ||= '2巻'
     self.location   ||= 'ハルケギニア'
     self.other1     ||= 'ケティ'
-    self.other2     ||= 'アン'
+    self.other2     ||= 'アン様'
     self.other3     ||= 'セイバー'
     self.other4     ||= 'シャナ'
-    self.other5     ||= 'ヴィルヘミナ'
+    self.other5     ||= 'ヴィルヘルミナ'
 
-    self.template
+    copypaste = self.template
       .gsub(/%name%/,     self.name)
       .gsub(/%full_name%/,  self.full_name)
-      .gsub(/%name_with_gasp%/,  self.name_with_gasp)
-      .gsub(/%name_with_space%/, self.name_with_space)
+      .gsub(/%hair_color%/, self.hair_color)
+      .gsub(/%name_with_gasp1%/, Kunkakunka::Text.gaspize(self.name))
+      .gsub(/%name_with_gasp2%/, Kunkakunka::Text.gaspize(self.name, 1, 2))
+      .gsub(/%name_with_space%/, Kunkakunka::Text.emphaize(self.name))
       .gsub(/%novel%/,    self.novel)
       .gsub(/%n_vol%/,    self.n_vol)
       .gsub(/%anime%/,    self.anime)
       .gsub(/%season%/,   self.season)
+      .gsub(/%comics%/,   self.comics)
       .gsub(/%c_vol%/,    self.c_vol)
       .gsub(/%location%/, self.location)
       .gsub(/%other1%/,   self.other1)
-      .gsub(/%other2%/,   self.other2)
-      .gsub(/%other3%/,   self.other3)
-      .gsub(/%other4%/,   self.other4)
-      .gsub(/%other5%/,   self.other5)
-  end
+      .gsub(/%other2%/,   Kunkakunka::Text.gaspize(self.other2, 1, 1))
+      .gsub(/%other3%/,   Kunkakunka::Text.fluffize(self.other3))
+      .gsub(/%other4%/,   Kunkakunka::Text.gaspize(self.other4, 1, 6))
+      .gsub(/%other5%/,   Kunkakunka::Text.gaspize(self.other5, 1, 3))
 
-  def name_with_gasp
-    # @name_with_gasp  ||= Kunkakunka::Text.gaspize(@name)
-    Kunkakunka::Text.gaspize(@name)
-  end
-
-  def name_with_space
-    # @name_with_space ||= Kunkakunka::Text.emphaize(@name)
-    Kunkakunka::Text.emphaize(@name)
+    self.strip_newline ? copypaste.gsub(/\n/, '') : copypaste
   end
 
   class << self
@@ -97,15 +100,20 @@ class Kunkakunka::Text
       }
     end
 
+    def gaspize(string, rep1 = 2, rep2 = 3)
+      char = string[string.length-1]
+      hira_map.merge(kana_map).each do |k, set|
+        return string + set[0]*rep1 + set[1]*rep2 if k.include?(char)
+      end
+      string + 'ぁ'*rep1 + 'あ'*rep2
+    end
+
     def emphaize(string)
       string.chars.map(&:to_s).join(' ')
     end
 
-    def gaspize(string)
-      char = string[string.length-1]
-      hira_map.merge(kana_map).each do |k, set|
-        return string + set[0]*2 + set[1]*3 if k.include?(char)
-      end
+    def fluffize(string)
+      "#{string[0]}、#{string}"
     end
   end
 end
